@@ -1,0 +1,184 @@
+---
+title: "MatGlyco"
+author: "Nico"
+date: "10/9/2020"
+output: html_document
+---
+```{r echo=FALSE, message=FALSE, warning=FALSE} 
+#Cargamos librerias
+library(lubridate)
+library(car)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(readr)
+library(rmarkdown)
+library(mosaicData)
+library(stringr)
+library(htmlwidgets)
+library(ggthemes)
+library(pander)
+library(xtable)
+library(reshape2)
+library(scales)
+library(tibble)
+library(abind)
+library(devtools)
+library(ggpubr)
+library(data.table)
+library(knitr)
+library(broom)
+```
+
+```{r CargadeDatos echo=FALSE, message=FALSE, warning=FALSE}
+MatGlyco<-c("/home/user/Desktop/Pasantia/Golgi/BoC Maturation/MaturationGlyco/ResultsIntrTransp3-1.csv","/home/user/Desktop/Pasantia/Golgi/BoC Maturation/MaturationGlyco/ResultsIntrTransp3-2.csv","/home/user/Desktop/Pasantia/Golgi/BoC Maturation/MaturationGlyco/ResultsIntrTransp3-3.csv")
+MatGlycoData<-data.frame(matrix(nrow=150,ncol=300))
+ for (i in 1:length(MatGlyco)){
+   if(i!=1){ 
+   SubjectDataM<-read.csv(MatGlyco[i],header=TRUE,sep=",")
+   MatGlycoData<-bind_cols(MatGlycoData,SubjectDataM,.name_repair = "minimal")#El minimal indica que no haya reparacion de nombres
+   
+   
+   }
+   else if (i==1){MatGlycoData<-(SubjectDataM<-read.csv(MatGlyco[i],header=TRUE,sep=","))
+   
+   }}
+#Definimos los nombres y los hacemos unicos
+nombres<-names(MatGlycoData)
+
+nombresunicos<-make.unique(nombres,sep = "")
+colnames(MatGlycoData)<-nombresunicos
+#Ahora los reestablecemos como los nombres del data frame
+#Vamos a cortar los datos hasta los 30k ticks para ver algo mejor la parte importante del transporte y normalizarlos
+MatGlycoData<-(MatGlycoData/8033)
+
+```
+
+
+```{r echo=FALSE,message=FALSE, warning=FALSE}
+PostGolgi<-rowMeans(MatGlycoData[,c("memS","memS1","memS2")])
+C1<-rowMeans(MatGlycoData[,c("memSRabA","memSRabA1","memSRabA2")])
+C2<-rowMeans(MatGlycoData[,c("memSRabB","memSRabB1","memSRabB2")])
+C3<-rowMeans(MatGlycoData[,c("memSRabC","memSRabC1","memSRabC2")])
+C4<-rowMeans(MatGlycoData[,c("memSRabD","memSRabD1","memSRabD2")])
+C5<-rowMeans(MatGlycoData[,c("memSRabE","memSRabE1","memSRabE2")])
+dataframepromM0.1CmemS<-data_frame(C1,C2,C3,C4,C5,PostGolgi)
+n<-length(dataframepromM0.1CmemS$C1)*100
+ticks<-seq(100,n,by=100)
+dataframepromM0.1CmemS$ticks<-ticks
+dmemS<-melt(dataframepromM0.1CmemS,id.vars="ticks")
+memSGraf<-ggplot(dmemS,aes(x=ticks,y=value,color=variable))+geom_point(size=45)+geom_line(size=20)+labs(x="",y="")+scale_color_manual(values = c("C1" = "blue", "C2" = "skyblue2","C3"="green4","C4"="red","C5"="yellow","PostGolgi"="grey1"))+theme_classic()+theme(text=element_text(size = 30))+ theme(legend.position="none") +
+  theme(legend.title=element_blank())+theme(axis.text = element_blank())+theme(plot.title = element_text(hjust=0.5))+theme(axis.title.x = element_text(vjust=1))+theme(axis.title.y = element_text(vjust=2.2))+theme(legend.text = element_text(size =15 ))+theme(legend.text = element_text(size = 50))+theme(axis.line = element_line(size=12),axis.ticks = element_line(colour = "black", size = 10))+theme( axis.ticks.length=unit(2, "cm"),axis.ticks.margin=unit(0.5,"cm"))+ylim(0, 1.2)+scale_x_continuous(breaks=c(0,15000,30000))
+memSGraf
+ggsave("memSMatGlyco.png",plot = memSGraf , width = 35, height = 30, dpi = 200, units = "in", device='png')
+```
+
+```{r echo=FALSE,message=FALSE, warning=FALSE}
+#En este caso veo que el grafico no arranca desde cero, probablemente porque en el momento cero no estaba presente dicho sustrato, ya que es una proteina que entra sin glicosilacion
+PostGolgi<-rowMeans(MatGlycoData[,c("memS1","memS11","memS12")])
+C1<-rowMeans(MatGlycoData[,c("memS1RabA","memS1RabA1","memS1RabA2")])
+C2<-rowMeans(MatGlycoData[,c("memS1RabB","memS1RabB1","memS1RabB2")])
+C3<-rowMeans(MatGlycoData[,c("memS1RabC","memS1RabC1","memS1RabC2")])
+C4<-rowMeans(MatGlycoData[,c("memS1RabD","memS1RabD1","memS1RabD2")])
+C5<-rowMeans(MatGlycoData[,c("memS1RabE","memS1RabE1","memS1RabE2")])
+dataframepromM0.1CmemS1<-data_frame(C1,C2,C3,C4,C5,PostGolgi)
+n<-length(dataframepromM0.1CmemS1$C1)*100
+ticks<-seq(100,n,by=100)
+dataframepromM0.1CmemS1$ticks<-ticks
+dmemS1<-melt(dataframepromM0.1CmemS1,id.vars="ticks")
+memS1Graf<-ggplot(dmemS1,aes(x=ticks,y=value,color=variable))+geom_point(size=45)+geom_line(size=10)+labs(x="",y="")+scale_color_manual(values = c("C1" = "blue", "C2" = "skyblue2","C3"="green4","C4"="red","C5"="yellow","PostGolgi"="grey1"))+theme_classic()+theme(text=element_text(size = 30))+ theme(legend.position="none") +
+   theme(legend.title=element_blank())+theme(axis.text = element_blank())+theme(plot.title = element_text(hjust=0.5))+theme(axis.title.x = element_text(vjust=1))+theme(axis.title.y = element_text(vjust=2.2))+theme(legend.text = element_text(size =15 ))+theme(legend.text = element_text(size = 50))+theme(axis.line = element_line(size=12),axis.ticks = element_line(colour = "black", size = 10))+theme( axis.ticks.length=unit(2, "cm"),axis.ticks.margin=unit(0.5,"cm"))+ scale_x_continuous(limits = c(0,1550,3000),expand = c(0,0))+ylim(0, 1.2)+scale_x_continuous(breaks=c(0,15000,30000))
+memS1Graf
+ggsave("memS1MatGlyco.png",plot = memS1Graf ,  width = 35, height = 30, dpi = 200, units = "in", device='png')
+```
+
+```{r echo=FALSE,message=FALSE, warning=FALSE}
+PostGolgi<-rowMeans(MatGlycoData[,c("memS2","memS21","memS22")])
+
+C1<-rowMeans(MatGlycoData[,c("memS2RabA","memS2RabA1","memS2RabA2")])
+C2<-rowMeans(MatGlycoData[,c("memS2RabB","memS2RabB1","memS2RabB2")])
+C3<-rowMeans(MatGlycoData[,c("memS2RabC","memS2RabC1","memS2RabC2")])
+C4<-rowMeans(MatGlycoData[,c("memS2RabD","memS2RabD1","memS2RabD2")])
+C5<-rowMeans(MatGlycoData[,c("memS2RabE","memS2RabE1","memS2RabE2")])
+dataframepromM0.1CmemS2<-data_frame(C1,C2,C3,C4,C5,PostGolgi)
+n<-length(dataframepromM0.1CmemS2$C1)*100
+ticks<-seq(100,n,by=100)
+dataframepromM0.1CmemS2$ticks<-ticks
+dmemS2<-melt(dataframepromM0.1CmemS2,id.vars="ticks")
+memS2Graf<-ggplot(dmemS2,aes(x=ticks,y=value,color=variable))+geom_point(size=45)+geom_line(size=10)+labs(x="",y="")+scale_color_manual(values = c("C1" = "blue", "C2" = "skyblue2","C3"="green4","C4"="red","C5"="yellow","PostGolgi"="grey1"))+theme_classic()+theme(text=element_text(size = 30))+ theme(legend.position="none") +  theme(legend.title=element_blank())+theme(axis.text = element_blank())+theme(plot.title = element_text(hjust=0.5))+theme(axis.title.x = element_text(vjust=1))+theme(axis.title.y = element_text(vjust=2.2))+theme(legend.text = element_text(size =15 ))+theme(legend.text = element_text(size = 50))+theme(axis.line = element_line(size=12),axis.ticks = element_line(colour = "black", size = 10))+theme( axis.ticks.length=unit(2, "cm"),axis.ticks.margin=unit(0.5,"cm"))+scale_x_continuous(breaks=c(0,15000,30000))+ylim(0, 1.2)#+scale_y_continuous(breaks=c(0,0.04,0.08,0.12,0.16))
+memS2Graf
+ggsave("memS2MatGlyco.png",plot = memS2Graf ,  width = 35, height = 30, dpi = 200, units = "in", device='png')
+```
+
+```{r echo=FALSE,message=FALSE, warning=FALSE}
+PostGolgi<-rowMeans(MatGlycoData[,c("memS3","memS31","memS32")])
+
+C1<-rowMeans(MatGlycoData[,c("memS3RabA","memS3RabA1","memS3RabA2")])
+C2<-rowMeans(MatGlycoData[,c("memS3RabB","memS3RabB1","memS3RabB2")])
+C3<-rowMeans(MatGlycoData[,c("memS3RabC","memS3RabC1","memS3RabC2")])
+C4<-rowMeans(MatGlycoData[,c("memS3RabD","memS3RabD1","memS3RabD2")])
+C5<-rowMeans(MatGlycoData[,c("memS3RabE","memS3RabE1","memS3RabE2")])
+dataframepromM0.1CmemS3<-data_frame(C1,C2,C3,C4,C5,PostGolgi)
+n<-length(dataframepromM0.1CmemS3$C1)*100
+ticks<-seq(100,n,by=100)
+dataframepromM0.1CmemS3$ticks<-ticks
+dmemS3<-melt(dataframepromM0.1CmemS3,id.vars="ticks")
+memS3Graf<-ggplot(dmemS3,aes(x=ticks,y=value,color=variable))+geom_point(size=45)+geom_line(size=10)+labs(x="",y="")+scale_color_manual(values = c("C1" = "blue", "C2" = "skyblue2","C3"="green4","C4"="red","C5"="yellow","PostGolgi"="grey1"))+theme_classic()+theme(text=element_text(size = 30))+ theme(legend.position="none") +  theme(legend.title=element_blank())+theme(axis.text = element_blank())+theme(plot.title = element_text(hjust=0.5))+theme(axis.title.x = element_text(vjust=1))+theme(axis.title.y = element_text(vjust=2.2))+theme(legend.text = element_text(size =15 ))+theme(legend.text = element_text(size = 50))+theme(axis.line = element_line(size=12),axis.ticks = element_line(colour = "black", size = 10))+theme( axis.ticks.length=unit(2, "cm"),axis.ticks.margin=unit(0.5,"cm"))+ylim(0, 1.2)+scale_x_continuous(breaks=c(0,15000,30000))
+memS3Graf
+ggsave("memS3MatGlyco.png",plot = memS3Graf ,  width = 35, height = 30, dpi = 200, units = "in", device='png')
+```
+
+```{r echo=FALSE,message=FALSE, warning=FALSE}
+PostGolgi<-rowMeans(MatGlycoData[,c("memC1","memC11","memC12")])
+#De aca para adelante yo le sacaria el post-golgi. qeuda feo y no da mucha informacion.
+C1<-rowMeans(MatGlycoData[,c("memC1RabA","memC1RabA1","memC1RabA2")])
+C2<-rowMeans(MatGlycoData[,c("memC1RabB","memC1RabB1","memC1RabB2")])
+C3<-rowMeans(MatGlycoData[,c("memC1RabC","memC1RabC1","memC1RabC2")])
+C4<-rowMeans(MatGlycoData[,c("memC1RabD","memC1RabD1","memC1RabD2")])
+C5<-rowMeans(MatGlycoData[,c("memC1RabE","memC1RabE1","memC1RabE2")])
+dataframepromM0.1CmemC1<-data_frame(C1,C2,C3,C4,C5,PostGolgi)
+n<-length(dataframepromM0.1CmemC1$C1)*100
+ticks<-seq(100,n,by=100)
+dataframepromM0.1CmemC1$ticks<-ticks
+dmemC1<-melt(dataframepromM0.1CmemC1,id.vars="ticks")
+memC1<-ggplot(dmemC1,aes(x=ticks,y=value,color=variable))+geom_point(size=45)+geom_line(size=10)+labs(x="",y="")+scale_color_manual(values = c("C1" = "blue", "C2" = "skyblue2","C3"="green4","C4"="red","C5"="yellow","PostGolgi"="grey1"))+theme_classic()+theme(text=element_text(size = 30))+ theme(legend.position="none") +  theme(legend.title=element_blank())+theme(axis.text = element_blank())+theme(plot.title = element_text(hjust=0.5))+theme(axis.title.x = element_text(vjust=1))+theme(axis.title.y = element_text(vjust=2.2))+theme(legend.text = element_text(size =15 ))+theme(legend.text = element_text(size = 50))+theme(axis.line = element_line(size=12),axis.ticks = element_line(colour = "black", size = 10))+theme( axis.ticks.length=unit(2, "cm"),axis.ticks.margin=unit(0.5,"cm"))+ylim(0, 1.2)+scale_x_continuous(breaks=c(0,15000,30000))
+memC1
+ggsave("memC1MatGlyco.png",plot = memC1 ,  width = 35, height = 30, dpi = 200, units = "in", device='png')
+```
+
+```{r echo=FALSE,message=FALSE, warning=FALSE}
+MatGlyco$
+PostGolgi<-rowMeans(MatGlycoData[,c("memC2","memC21","memC22")])
+
+C1<-rowMeans(MatGlycoData[,c("memC2RabA","memC2RabA1","memC2RabA2")])
+C2<-rowMeans(MatGlycoData[,c("memC2RabB","memC2RabB1","memC2RabB2")])
+C3<-rowMeans(MatGlycoData[,c("memC2RabC","memC2RabC1","memC2RabC2")])
+C4<-rowMeans(MatGlycoData[,c("memC2RabD","memC2RabD1","memC2RabD2")])
+C5<-rowMeans(MatGlycoData[,c("memC2RabE","memC2RabE1","memC2RabE2")])
+dataframepromM0.1CmemC2<-data_frame(C1,C2,C3,C4,C5,PostGolgi)
+n<-length(dataframepromM0.1CmemC2$C1)*100
+ticks<-seq(100,n,by=100)
+dataframepromM0.1CmemC2$ticks<-ticks
+dmemC2<-melt(dataframepromM0.1CmemC2,id.vars="ticks")
+memC2Graf<-ggplot(dmemC2,aes(x=ticks,y=value,color=variable))+geom_point(size=45)+geom_line(size=10)+labs(x="",y="")+scale_color_manual(values = c("C1" = "blue", "C2" = "skyblue2","C3"="green4","C4"="red","C5"="yellow","PostGolgi"="grey1"))+theme_classic()+theme(text=element_text(size = 30))+ theme(legend.position="none") +  theme(legend.title=element_blank(),axis.text = element_blank(),plot.title = element_text(hjust=0.5))+theme(axis.title.x = element_text(vjust=1))+theme(axis.title.y = element_text(vjust=2.2))+theme(legend.text = element_text(size =15 ))+theme(legend.text = element_text(size = 50))+theme(axis.line = element_line(size=12),axis.ticks = element_line(colour = "black", size = 10))+theme( axis.ticks.length=unit(2, "cm"),axis.ticks.margin=unit(0.5,"cm"))+ylim(0, 1.2)+scale_x_continuous(breaks=c(0,15000,30000))
+memC2Graf
+ggsave("memC2MatGlyco.png",plot = memC2Graf ,  width = 35, height = 30, dpi = 200, units = "in", device='png')
+```
+
+```{r echo=FALSE,message=FALSE, warning=FALSE}
+PostGolgi<-rowMeans(MatGlycoData[,c("memC3","memC31","memC32")])
+
+C1<-rowMeans(MatGlycoData[,c("memC3RabA","memC3RabA1","memC3RabA2")])
+C2<-rowMeans(MatGlycoData[,c("memC3RabB","memC3RabB1","memC3RabB2")])
+C3<-rowMeans(MatGlycoData[,c("memC3RabC","memC3RabC1","memC3RabC2")])
+C4<-rowMeans(MatGlycoData[,c("memC3RabD","memC3RabD1","memC3RabD2")])
+C5<-rowMeans(MatGlycoData[,c("memC3RabE","memC3RabE1","memC3RabE2")])
+dataframepromM0.1CmemC3<-data_frame(C1,C2,C3,C4,C5,PostGolgi)
+n<-length(dataframepromM0.1CmemC3$C1)*100
+ticks<-seq(100,n,by=100)
+dataframepromM0.1CmemC3$ticks<-ticks
+dmemC3<-melt(dataframepromM0.1CmemC3,id.vars="ticks")
+memC3Graf<-ggplot(dmemC3,aes(x=ticks,y=value,color=variable))+geom_point(size=45)+geom_line(size=10)+labs(x="",y="")+scale_color_manual(values = c("C1" = "blue", "C2" = "skyblue2","C3"="green4","C4"="red","C5"="yellow","PostGolgi"="grey1"))+theme_classic()+theme(text=element_text(size = 30))+ theme(legend.position="none") +  theme(legend.title=element_blank())+theme(axis.text = element_blank())+theme(plot.title = element_text(hjust=0.5))+theme(axis.title.x = element_text(vjust=1))+theme(axis.title.y = element_text(vjust=2.2))+theme(legend.text = element_text(size =15 ))+theme(legend.text = element_text(size = 50))+theme(axis.line = element_line(size=12),axis.ticks = element_line(colour = "black", size = 10))+theme( axis.ticks.length=unit(2, "cm"),axis.ticks.margin=unit(0.5,"cm"))+ylim(0, 1.2)+scale_x_continuous(breaks=c(0,15000,30000))
+memC3Graf
+ggsave("memC3MatGlyco.png",plot = memC3Graf ,  width = 35, height = 30, dpi = 200, units = "in", device='png')
+```

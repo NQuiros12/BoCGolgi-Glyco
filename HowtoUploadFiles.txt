@@ -1,0 +1,10 @@
+git add VesicularGlyco.Rmd 
+#Este el nombredel archivo
+git commit -m "comentario"
+https://stackoverflow.com/questions/40643488/upload-files-to-a-branch-in-github
+git branch -M master
+
+git remote add
+
+ git push -u origin 
+
