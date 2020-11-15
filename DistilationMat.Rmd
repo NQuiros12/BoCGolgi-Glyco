@@ -1,0 +1,249 @@
+---
+title: "BoC DistilationMat"
+author: "Nico"
+date: "9/22/2020"
+output: html_document
+---
+
+```{r echo=FALSE, message=FALSE, warning=FALSE} 
+#Cargamos librerias
+library(lubridate)
+library(stringr)
+library(car)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(readr)
+library(rmarkdown)
+library(mosaicData)
+library(stringr)
+library(htmlwidgets)
+library(ggthemes)
+library(pander)
+library(xtable)
+library(reshape2)
+library(scales)
+library(tibble)
+library(abind)
+library(devtools)
+library(ggpubr)
+library(data.table)
+library(knitr)
+library(broom)
+```
+**Datos Area**
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#CisternsAreaNames<-c('/home/user/Desktop/Pasantia/Golgi/BoC /Distilation+Maturation/cisternsArea-1.csv','/home/user/Desktop/Pasantia/Golgi/BoC Distilation/Distilation+Maturation/cisternsArea-2.csv','/home/user/Desktop/Pasantia/Golgi/BoC Distilation/Distilation+Maturation/cisternsArea-3.csv')
+ves1<-read.csv('/home/user/Desktop/Pasantia/Golgi/BoC Distilation/Distillation+Maturation/cisternsArea-1.csv')
+ves2<-read.csv('/home/user/Desktop/Pasantia/Golgi/BoC Distilation/Distillation+Maturation/cisternsArea-2.csv')
+ves3<-read.csv('/home/user/Desktop/Pasantia/Golgi/BoC Distilation/Distillation+Maturation/cisternsArea-3.csv')
+ves1<-ves1[1:300,]
+ves3<-ves3[1:300,]
+ves2<-ves2[1:300,]
+DistilationMatCisternAreaData<-cbind(ves1,ves2,ves3)
+#Debido a que actualizaron dplyr la funcion bind_cols ya no sirve, porque agrega todo junto pero no lo numera con un orden logico sino que lo numera con un orden cardinal.Lo solucione de una manera mas casera porque la gente de dplyr parece haber decidido hacerlo de esta manera.
+# DistilationMatCisternAreaData<-data.frame(matrix(nrow=150,ncol=300))
+# for (i in 1:length(CisternsAreaNames)){
+#   if(i!=1){ 
+#   SubjectDataM<-read.csv(CisternsAreaNames[i],header=TRUE,sep=",")
+#   DistilationMatCisternAreaData<-bind_cols(DistilationMatCisternAreaData,SubjectDataM,.name_repair = "minimal")#El minimal indica que no haya reparacion de nombres
+#   
+#   
+#   }
+#   else if (i==1){DistilationMatCisternAreaData<-(SubjectDataM<-read.csv(CisternsAreaNames[i],header=TRUE,sep=","))
+#   
+#   }}
+#Definimos los nombres y los hacemos unicos
+nombres<-names(DistilationMatCisternAreaData)
+
+nombresunicos<-make.unique(nombres,sep = "")
+colnames(DistilationMatCisternAreaData)<-nombresunicos
+#print(nombresunicos)#Ahora los reestablecemos como los nombres del data frame
+#Vamos a cortar los datos hasta los 30k ticks para ver algo mejor la parte importante del transporte
+DistilationMatCisternAreaData<-DistilationMatCisternAreaData[1:300,]
+```
+
+
+```{r General Expressions Area}
+#Busca dentro del vector donde estan los nombres palabras que coincidan con RabB1.
+#Esto me permite agilizar la escritura cuando tenga mas de 3 simulaciones
+#donde ya es engorroso anotar cada uno de los nombres cambiandole los nombres.
+RabB<-grep("RabB1*",nombresunicos,value=T)
+RabC<-grep("RabC1*",nombresunicos,value=T)
+RabD<-grep("RabD1*",nombresunicos,value=T)
+RabE<-grep("RabE1*",nombresunicos,value=T)
+RabA<-grep("RabA1*",nombresunicos,value=T)
+
+head(RabA)
+```
+```{r BANDERA echo=FALSE, message=FALSE, warning=FALSE}
+C2<-rowMeans(DistilationMatCisternAreaData[,c(RabB)])
+C3<-rowMeans(DistilationMatCisternAreaData[,c(RabC)])
+C4<-rowMeans(DistilationMatCisternAreaData[,c(RabD)])
+C5<-rowMeans(DistilationMatCisternAreaData[,c(RabE)])
+C1<-rowMeans(DistilationMatCisternAreaData[,c(RabA)])
+
+dataframepromedioCisternArea<-data.frame(C5,C4,C3,C2,C1)
+n<-length(dataframepromedioCisternArea$C1)*100
+ticks<-seq(100,n,by=100)
+dataframepromedioCisternArea$ticks<-ticks
+d1<-melt(dataframepromedioCisternArea,id.vars="ticks")
+CisternAreaGrafPromedio<-ggplot(d1, aes(x=ticks, y=value, fill=variable)) + geom_area()+labs(x="",y="")+ scale_fill_manual(values = c("C1" = "blue", "C2" = "skyblue2","C3"="green4","C4"="red","C5"="yellow"))+theme_classic()+scale_x_continuous(breaks= c(0,15000,30000))+theme(legend.key.size = unit(3, "cm"))+theme(legend.position="none",axis.ticks.length=unit(0.5, "cm"),legend.title=element_blank(),axis.text =element_blank(),axis.line = element_line(size=3),axis.ticks = element_line(colour = "black", size = 3),text=element_text(size = 30))
+#+theme(text=element_text(size = 30))+theme(legend.position="none")+theme(legend.title=element_blank())+theme(plot.title = element_text(hjust=0.7))+theme(axis.text.x =element_blank())+theme(axis.text.y = element_blank())+theme(legend.text = element_text(size =75 ))+theme(axis.title = element_text(size = 80))+theme(axis.line = element_line(size=3))+theme(axis.ticks = element_line(colour = "black", size = 3))
+CisternAreaGrafPromedio
+ggsave("BanderaDistilationMatBoC.png",plot = CisternAreaGrafPromedio,width = 26, height = 20, dpi = 150, units = "in", device='png')
+```
+
+```{r General Expressions Area}
+#Busca dentro del vector donde estan los nombres palabras que coincidan con RabB1.
+#Esto me permite agilizar la escritura cuando tenga mas de 3 simulaciones
+#donde ya es engorroso anotar cada uno de los nombres cambiandole los nombres.
+entropy<-grep("entropy*",nombresunicos,value=T)
+entropyInd<-grep("entropyInd*",nombresunicos,value=T)
+head(entropyInd)
+```
+
+```{r Entropy echo=FALSE, message=FALSE, warning=FALSE}
+#Entropia
+Entropy<-rowMeans(DistilationMatCisternAreaData[,c(entropy)])
+IndEntropy<-rowMeans(DistilationMatCisternAreaData[,c(entropyInd)])
+
+
+dataframepromedioEntropy<-data.frame(Entropy,IndEntropy)
+names(dataframepromedioEntropy)[names(dataframepromedioEntropy) == "Entropy"] <- "intra-cisterna entropy"
+names(dataframepromedioEntropy)[names(dataframepromedioEntropy) == "IndEntropy"] <- "inter-cisternae entropy"
+#head(dataframepromedioM0.01Entropy)
+n<-length(dataframepromedioEntropy$`intra-cisterna entropy`)*100
+ticks<-seq(100,n,by=100)
+dataframepromedioEntropy$ticks<-ticks
+d1<-melt(dataframepromedioEntropy,id.vars="ticks")
+EntropyGrafDPromedio<-ggplot(d1,aes(x=ticks,y=value,color=variable))+geom_point(size=12)+labs(x="",y="")+ theme_bw() +theme(axis.line = element_line(colour = "black"))+theme_classic()+theme(text=element_text(size = 15))+ theme(legend.position="none") +
+theme(legend.title=element_blank())+ scale_color_manual(values = c("inter-cisternae entropy" = "khaki4","intra-cisterna entropy"="khaki3"))+guides(colour=guide_legend(override.aes = list(size = 25)))+theme(plot.title = element_text(hjust=0.7))+theme(axis.text.x =element_blank())+theme(axis.text.y = element_blank())+theme(legend.text = element_text(size =15 ))+ theme(legend.key.size = unit(6, "cm"))+theme(legend.text = element_text(size = 50))+theme(axis.line = element_line(size=3))+theme(axis.ticks = element_line(colour = "black", size = 3))+theme( axis.ticks.length=unit(0.5, "cm"))+theme(axis.ticks.margin=unit(0.5, "cm"))+scale_x_continuous(breaks= c(0,15000,30000))
+EntropyGrafDPromedio 
+ggsave("EntropyGrafBoCDistilationMat.png",plot = EntropyGrafDPromedio , width = 26, height = 20, dpi = 150, units = "in", device='png')
+```
+*Cargos*
+**Datos Cargos**
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#CisternsNames<-c('/home/user/Desktop/Pasantia/Golgi/BoC DistilationMat/DistilationMatDomain/ResultsIntrTransp3-1.csv','/home/user/Desktop/Pasantia/Golgi/BoC DistilationMat/DistilationMatDomain/ResultsIntrTransp3-2.csv','/home/user/Desktop/Pasantia/Golgi/BoC DistilationMat/DistilationMatDomain/ResultsIntrTransp3-3.csv')
+ves1<-read.csv('/home/user/Desktop/Pasantia/Golgi/BoC Distilation/Distillation+Maturation/ResultsIntrTransp3-1.csv')
+ves2<-read.csv('/home/user/Desktop/Pasantia/Golgi/BoC Distilation/Distillation+Maturation/ResultsIntrTransp3-12.csv')
+ves3<-read.csv('/home/user/Desktop/Pasantia/Golgi/BoC Distilation/Distillation+Maturation/ResultsIntrTransp3-3.csv')
+ves1<-ves1[1:300,]
+ves3<-ves3[1:300,]
+ves2<-ves2[1:300,]
+DistilationMatData<-cbind(ves1,ves2,ves3)
+#Debido a que actualizaron dplyr la funcion bind_cols ya no sirve, porque agrega todo junto pero no lo numera con un orden logico sino que lo numera con un orden cardinal.Lo solucione de una manera mas casera porque la gente de dplyr parece haber decidido hacerlo de esta manera.
+# DistilationMatData<-data.frame(matrix(nrow=150,ncol=64))
+# for (i in 1:length(CisternsNames)){
+#   if(i!=1){ 
+#   SubjectDataM<-read.csv(CisternsNames[i],header=TRUE,sep=",")
+#   DistilationMatData<-bind_cols(DistilationMatData,SubjectDataM,.name_repair = "minimal")#El minimal indica que no haya reparacion de nombres
+#   
+#   
+#   }
+#   else if (i==1){DistilationMatData<-(SubjectDataM<-read.csv(CisternsNames[i],header=TRUE,sep=","))
+#   }}
+#Definimos los nombres y los hacemos unicos
+nombres<-names(DistilationMatData)
+nombresunicos<-make.unique(nombres,sep = "")
+colnames(DistilationMatData)<-nombresunicos
+#Nos quedamos con la primera media hora (30000 ticks)
+DistilationMatData<-DistilationMatData[1:300,]
+#tail(DistilationMatData)
+```
+
+```{r General Expressions sol L Data}
+#Busca dentro del vector donde estan los nombres palabras que coincidan con RabB1.
+#Esto me permite agilizar la escritura cuando tenga mas de 3 simulaciones
+#donde ya es engorroso anotar cada uno de los nombres cambiandole los nombres.
+solLRabB<-grep("^solLRabB$|^solLRabB*\\d$",nombresunicos,value=T)
+PostGolgi<-grep("^solL$|^solL*\\d$",nombresunicos,value=T)
+solLRabA<-grep("^solLRabA$|^solLRabA*\\d$",nombresunicos,value=T)
+solLRabC<-grep("^solLRabC$|^solLRabC*\\d$",nombresunicos,value=T)
+solLRabD<-grep("^solLRabD$|^solLRabD*\\d$",nombresunicos,value=T)
+solLRabE<-grep("^solLRabE$|^solLRabE*\\d$",nombresunicos,value=T)
+print(PostGolgi)
+```
+
+```{r solL echo=FALSE, message=FALSE, warning=FALSE}
+PostGolgi<-rowMeans(DistilationMatData[,c(PostGolgi)])
+C1<-rowMeans(DistilationMatData[,c(solLRabA)])
+C2<-rowMeans(DistilationMatData[,c(solLRabB)])
+C3<-rowMeans(DistilationMatData[,c(solLRabC)])
+C4<-rowMeans(DistilationMatData[,c(solLRabD)])
+C5<-rowMeans(DistilationMatData[,c(solLRabE)])
+dataframepromedio0.1CsolL<-data.frame(C1,C2,C3,C4,C5,PostGolgi)
+n<-length(dataframepromedio0.1CsolL$C1)*100
+ticks<-seq(100,n,by=100)
+dataframepromedio0.1CsolL$ticks<-ticks
+d1<-melt(dataframepromedio0.1CsolL,id.vars="ticks")
+solLGrafDPromedio<-ggplot(d1,aes(x=ticks,y=value,color=variable))+geom_point(size=12)+geom_line(size=5)+labs(x="",y="") +scale_color_manual(values = c("C1" = "blue", "C2" = "skyblue2","C3"="green4","C4"="red","C5"="yellow","PostGolgi"="grey1"))+theme_classic()+theme(text=element_text(size = 30))+ theme(legend.position="none") +
+  theme(legend.title=element_blank())+theme(plot.title = element_text(hjust=0.5),axis.text = element_blank())+theme(axis.title.x = element_text(vjust=1))+theme(axis.title.y = element_text(vjust=2.2))+theme(legend.text = element_text(size =15 ))+theme(legend.text = element_text(size = 50))+theme(axis.line = element_line(size=3))+theme(axis.ticks = element_line(colour = "black", size = 3))+theme( axis.ticks.length=unit(0.5, "cm"))+theme(axis.ticks.margin=unit(0.5, "cm"))+scale_x_continuous(breaks= c(0,15000,30000))+scale_y_continuous(breaks= c(0,0.25,0.5,0.75,1,1.25))
+solLGrafDPromedio
+ggsave("solLBoCDistilationMat.png",plot = solLGrafDPromedio , width = 26, height = 20, dpi = 150, units = "in", device='png')
+```
+
+```{r General Expressions Data}
+#Busca dentro del vector donde estan los nombres palabras que coincidan con RabB1.
+#Esto me permite agilizar la escritura cuando tenga mas de 3 simulaciones
+#donde ya es engorroso anotar cada uno de los nombres cambiandole los nombres.
+solSRabB<-grep("^solSRabB$|^solSRabB*\\d$",nombresunicos,value=T)
+PostGolgi<-grep("^solS$|^solS*\\d$",nombresunicos,value=T)
+solSRabA<-grep("^solSRabA$|^solSRabA*\\d$",nombresunicos,value=T)
+solSRabC<-grep("^solSRabC$|^solSRabC*\\d$",nombresunicos,value=T)
+solSRabD<-grep("^solSRabD$|^solSRabD*\\d$",nombresunicos,value=T)
+solSRabE<-grep("^solSRabE$|^solSRabE*\\d$",nombresunicos,value=T)
+print(PostGolgi)
+```
+
+```{r solS echo=FALSE,message=FALSE, warning=FALSE}
+PostGolgi<-rowMeans(DistilationMatData[,c(PostGolgi)])
+
+C1<-rowMeans(DistilationMatData[,c(solSRabA)])
+C2<-rowMeans(DistilationMatData[,c(solSRabB)])
+C3<-rowMeans(DistilationMatData[,c(solSRabC)])
+C4<-rowMeans(DistilationMatData[,c(solSRabD)])
+C5<-rowMeans(DistilationMatData[,c(solSRabE)])
+dataframepromM0.01CsolS<-data_frame(C1,C2,C3,C4,C5,PostGolgi)
+n<-length(dataframepromM0.01CsolS$C1)*100
+ticks<-seq(100,n,by=100)
+dataframepromM0.01CsolS$ticks<-ticks
+dsolS<-melt(dataframepromM0.01CsolS,id.vars="ticks")
+solSGraf<-ggplot(dsolS,aes(x=ticks,y=value,color=variable))+geom_point(size=12)+geom_line(size=5)+labs(x="",y="") +scale_color_manual(values = c("C1" = "blue", "C2" = "skyblue2","C3"="green4","C4"="red","C5"="yellow","PostGolgi"="grey1"))+theme_classic()+theme(text=element_text(size = 30))+ theme(legend.position="none") +
+  theme(legend.title=element_blank())+theme(plot.title = element_text(hjust=0.5))+theme(axis.title.x = element_text(vjust=1))+theme(axis.title.y = element_text(vjust=2.2))+theme(axis.text.x =element_blank())+theme(axis.text.y = element_blank())+theme(legend.text = element_text(size =15 ))+theme(legend.text = element_text(size = 50))+theme(axis.line = element_line(size=3))+theme(axis.ticks = element_line(colour = "black", size = 3))+theme( axis.ticks.length=unit(0.5, "cm"))+theme(axis.ticks.margin=unit(0.5, "cm"),axis.text = element_blank())+scale_x_continuous(breaks= c(0,15000,30000))+scale_y_continuous(breaks= c(0,0.25,0.5,0.75,1,1.25))
+solSGraf
+ggsave("solSBoCDistilationMat.png",plot = solSGraf , width = 26, height = 20, dpi = 150, units = "in", device='png')
+```
+
+```{r General Expressions Data}
+#Busca dentro del vector donde estan los nombres palabras que coincidan con RabB1.
+#Esto me permite agilizar la escritura cuando tenga mas de 3 simulaciones
+#donde ya es engorroso anotar cada uno de los nombres cambiandole los nombres.
+memGolgiMedialRabB<-grep("^memGolgiMedialRabB$|^memGolgiMedialRabB*\\d$",nombresunicos,value=T)
+PostGolgi<-grep("^memGolgiMedial$|^memGolgiMedial*\\d$",nombresunicos,value=T)
+memGolgiMedialRabA<-grep("^memGolgiMedialRabA$|^memGolgiMedialRabA*\\d$",nombresunicos,value=T)
+memGolgiMedialRabC<-grep("^memGolgiMedialRabC$|^memGolgiMedialRabC*\\d$",nombresunicos,value=T)
+memGolgiMedialRabD<-grep("^memGolgiMedialRabD$|^memGolgiMedialRabD*\\d$",nombresunicos,value=T)
+memGolgiMedialRabE<-grep("^memGolgiMedialRabE$|^memGolgiMedialRabE*\\d$",nombresunicos,value=T)
+print(PostGolgi)
+```
+
+```{r memGolgiMedial echo=FALSE,message=FALSE, warning=FALSE}
+PostGolgi<-rowMeans(DistilationMatData[,c(PostGolgi)])
+
+C1<-rowMeans(DistilationMatData[,c(memGolgiMedialRabA)])
+C2<-rowMeans(DistilationMatData[,c(memGolgiMedialRabB)])
+C3<-rowMeans(DistilationMatData[,c(memGolgiMedialRabC)])
+C4<-rowMeans(DistilationMatData[,c(memGolgiMedialRabD)])
+C5<-rowMeans(DistilationMatData[,c(memGolgiMedialRabE)])
+dataframepromM0.1CmemGolgiMedial<-data_frame(C1,C2,C3,C4,C5,PostGolgi)
+n<-length(dataframepromM0.1CmemGolgiMedial$C1)*100
+ticks<-seq(100,n,by=100)
+dataframepromM0.1CmemGolgiMedial$ticks<-ticks
+dmemGolgiMedial<-melt(dataframepromM0.1CmemGolgiMedial,id.vars="ticks")
+memGolgiMedialGraf<-ggplot(dmemGolgiMedial,aes(x=ticks,y=value,color=variable))+geom_point(size=12)+geom_line(size=5)+labs(x="",y="")+scale_color_manual(values = c("C1" = "blue", "C2" = "skyblue2","C3"="green4","C4"="red","C5"="yellow","PostGolgi"="grey1"))+theme_classic()+theme(text=element_text(size = 30))+ theme(legend.position="none") +
+  theme(legend.title=element_blank())+theme(plot.title = element_text(hjust=0.5))+theme(axis.title.x = element_text(vjust=1))+theme(axis.title.y = element_text(vjust=2.2))+theme(axis.text.x =element_blank())+theme(axis.text.y = element_blank())+theme(legend.text = element_text(size =15 ))+theme(legend.text = element_text(size = 50))+theme(axis.line = element_line(size=3))+theme(axis.ticks = element_line(colour = "black", size = 3))+theme( axis.ticks.length=unit(0.5, "cm"))+theme(axis.ticks.margin=unit(0.5,"cm"),,axis.text = element_blank())+scale_x_continuous(breaks=c(0,15000,30000))+scale_y_continuous(breaks= c(0,0.25,0.5,0.75,1,1.25))
+memGolgiMedialGraf
+ggsave("memGolgiMedialBoCDistilationMat.png",plot = memGolgiMedialGraf , width = 26, height = 20, dpi = 150, units = "in", device='png')
+```
