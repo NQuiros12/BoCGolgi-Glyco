@@ -94,37 +94,31 @@ tail(DistilationMatCisternAreaData)
 ```
 
 ```{r Area  Data supp figures echo=FALSE, message=FALSE, warning=FALSE}
-CisternsAreaNames <-list.files(path = "/home/user/Desktop/Pasantia/Golgi/datos_franco/Distilation/Resultados-Distillation-estable_-sat-13-7/Resultados Distillation estable, sat 13-7/", pattern = "cisternsArea*", full.names = T)
-
-DistilationEstCisternAreaData<-data.frame(matrix(nrow=150,ncol=64))
-for (i in 1:length(CisternsAreaNames)){
-   if(i!=1){ 
-   SubjectDataM<-read.csv(CisternsAreaNames[i],header=TRUE,sep=",")
-   DistilationEstCisternAreaData<-bind_cols(DistilationEstCisternAreaData,SubjectDataM,.name_repair = "minimal")#El minimal indica que no haya reparacion de nombres
-   
-   
-   }
-   else if (i==1){DistilationEstCisternAreaData<-(SubjectDataM<-read.csv(CisternsAreaNames[i],header=TRUE,sep=","))
-   
-}}
-#Definimos los nombres y los hacemos unicos
-nombres<-names(DistilationEstCisternAreaData)
-
-nombresunicos<-make.unique(nombres,sep = "")
-colnames(DistilationEstCisternAreaData)<-nombresunicos
-print(nombresunicos)#Ahora los reestablecemos como los nombres del data frame
-#Vamos a cortar los datos hasta los 30k ticks para ver algo mejor la parte importante del transporte
-DistilationEstCisternAreaData<-DistilationEstCisternAreaData[1:300,]
-tail(DistilationEstCisternAreaData)
+# CisternsAreaNames <-list.files(path = "/home/user/Desktop/Pasantia/Golgi/datos_franco/Distilation/Resultados-Distillation-estable_-sat-13-7/Resultados Distillation estable, sat 13-7/", pattern = "cisternsArea*", full.names = T)
+# 
+# DistilationEstCisternAreaData<-data.frame(matrix(nrow=150,ncol=64))
+# for (i in 1:length(CisternsAreaNames)){
+#    if(i!=1){ 
+#    SubjectDataM<-read.csv(CisternsAreaNames[i],header=TRUE,sep=",")
+#    DistilationEstCisternAreaData<-bind_cols(DistilationEstCisternAreaData,SubjectDataM,.name_repair = "minimal")#El minimal indica que no haya reparacion de nombres
+#    
+#    
+#    }
+#    else if (i==1){DistilationEstCisternAreaData<-(SubjectDataM<-read.csv(CisternsAreaNames[i],header=TRUE,sep=","))
+#    
+# }}
+# #Definimos los nombres y los hacemos unicos
+# nombres<-names(DistilationEstCisternAreaData)
+# 
+# nombresunicos<-make.unique(nombres,sep = "")
+# colnames(DistilationEstCisternAreaData)<-nombresunicos
+# print(nombresunicos)#Ahora los reestablecemos como los nombres del data frame
+# #Vamos a cortar los datos hasta los 30k ticks para ver algo mejor la parte importante del transporte
+# DistilationEstCisternAreaData<-DistilationEstCisternAreaData[1:300,]
+# tail(DistilationEstCisternAreaData)
 ```
 
 ```{r General Expressions Multiple Area Data Supp figures}
-#head(nombresunicos)
-#shopping_list <- c("apples x4", "bag of flour", "bag of sugar", "milk x2")
-#str_extract(shopping_list, "\\d")
-#str_extract(shopping_list, "[a-z]+")
-#str_extract(shopping_list, "[a-z]{1,4}")
-#res<-select(nombresunicos, "RabB")
 #Busca dentro del vector donde estan los nombres palabras que coincidan con RabB1.
 #Esto me permite agilizar la escritura cuando tenga mas de 3 simulaciones
 #donde ya es engorroso anotar cada uno de los nombres cambiandole los nombres.
@@ -133,7 +127,7 @@ RabC<-grep("RabC1*",nombresunicos,value=T)
 RabD<-grep("RabD1*",nombresunicos,value=T)
 RabE<-grep("RabE1*",nombresunicos,value=T)
 RabA<-grep("RabA1*",nombresunicos,value=T)
-#res<-c(str_extract_all(nombresunicos, "\\Rab[B]{1,3}", T))
+
 print(RabA)
 ```
 
