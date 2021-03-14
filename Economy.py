@@ -1,15 +1,18 @@
 #In this code I going to try to make an easy
 # #code to administrate your economic
+#poner que busque el precio del dolar
+#poner que te pregunte cuanto queres ahorrar al mes
 
 class Economy():
-    def __init__(self,salary,dollar,debt):
+    def __init__(self,salary,dollar,saving,debt):
         self.salary=salary
         self.dollar=dollar
-        self.saving=0
+        self.saving=saving
         self.debt=debt
+        
        
     def savings(self):
-        self.saving=int(self.salary*0.10)
+        self.saving=int(self.salary*0.1)
         print("Este mes ahorraste "+str(self.saving))
     def debts(self):
         if self.debt==0:
@@ -19,9 +22,36 @@ class Economy():
     def convert_currency(self):
         saving_dollarize=((self.saving)/self.dollar)
         print("Tus ahorros en dolares este fueron "+str(saving_dollarize))
-print("\n Este programa calcula cuanto podes ahorrar por mes")
-print("\nSi no posees deudas pone cero.")
+print("\n Este programa calcula cuanto podes ahorrar por salario. Ahorrando un 10% del salario.")
+print("\nSi no tenes deudas pone cero.")
 nico_economy=Economy(int(input('salario: ')),int(input("dolar: ")),int(input("deudas: ")))
 nico_economy.savings()
 nico_economy.convert_currency()
 nico_economy.debts()
+#VERSION NUEVA
+class Economy():
+    
+    def __init__(self):
+        self.salary=float(input("Salario"))
+        self.percentage=float(input("Porcentaje"))
+        self.doubt =float(input("Deudas:\nSino posee deudas coloque cero"))
+        self.saving = 0
+        self.dollar= 120.0#Hay que buscar como hacer que lo busque automatico
+        self.savesDollar= 0
+    def savings(self):
+        self.saving = self.salary * (self.percentage/100)
+        self.savesDollar = round(self.saving / self.dollar,3)
+    def doubts(self):
+        if self.doubt == 0:
+            print("No hay deudas este mes")
+        else:
+            print("Duedas:",self.doubt)
+        print("Este mes ahorraste", self.saving)
+        print("Esos ahorros en dolares son",self.savesDollar)
+
+
+nico_economy= Economy()
+nico_economy.savings()
+nico_economy.doubts()
+print(nico_economy.savings())
+print(nico_economy.doubts())
