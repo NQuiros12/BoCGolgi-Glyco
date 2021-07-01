@@ -1,0 +1,111 @@
+---
+title: "Tesis"
+author: "Nico"
+date: "3/26/2021"
+output: html_document
+---
+```{r echo=FALSE, message=FALSE, warning=FALSE} 
+#Cargamos librerias
+library(lubridate)
+library(car)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(readr)
+library(rmarkdown)
+library(mosaicData)
+library(stringr)
+library(htmlwidgets)
+library(ggthemes)
+library(pander)
+library(xtable)
+library(reshape2)
+library(scales)
+library(tibble)
+library(abind)
+library(devtools)
+library(ggpubr)
+library(data.table)
+library(knitr)
+library(broom)
+```
+
+```{r}
+common_path = "/home/user/Desktop/Pasantia/Tesis/SinBatch/"
+#Tengo dos ideas, o cargar todos los resultados sin importar de donde vienen y despues discriminarlos
+#O cargar los datos usando un patron para separarlos.
+```
+
+```{r}
+files_to_read = list.files(
+  path = common_path,        # directory to search within
+  pattern = "^cisternsArea", # regex pattern, some explanation below
+  recursive = TRUE,          # search subdirectories
+  full.names = TRUE          # return the full path
+)
+#/home/user/Desktop/Pasantia/Tesis/SinBatch//0.1/cisternsArea.csv
+#print(files_to_read[15])
+#files_0.01<-str_extract(files_to_read,pattern = "01[:punct:][1:2][:punct:]ResultsIntrTransp3.csv$")
+#0.1
+files_0.1<-str_extract(files_to_read,pattern = "0[:punct:]1[:punct:]cisternsArea.csv$|[:punct:]0[:punct:]1[:punct:]cisternsArea \\([2:3]\\).csv$")
+files_0.1<-files_0.1[!is.na(files_0.1)]
+files_0.1<-paste0(common_path,files_0.1)
+
+#0.01
+files_0.01<-str_extract(files_to_read,pattern = "0[:punct:]01[:punct:]cisternsArea.csv$|[:punct:]0[:punct:]01[:punct:]cisternsArea \\([2:3]\\).csv$")
+files_0.01<-files_0.01[!is.na(files_0.01)]
+files_0.01<-paste0(common_path,files_0.01)
+
+#0.001
+files_0.001<-str_extract(files_to_read,pattern = "0[:punct:]001[:punct:]cisternsArea.csv$|[:punct:]0[:punct:]001[:punct:]cisternsArea \\([2:3]\\).csv$")
+files_0.001<-files_0.001[!is.na(files_0.001)]
+files_0.001<-paste0(common_path,files_0.001)
+
+#0.05
+files_0.05<-str_extract(files_to_read,pattern = "0[:punct:]05[:punct:]cisternsArea.csv$|[:punct:]0[:punct:]05[:punct:]cisternsArea \\([2:3]\\).csv$")
+files_0.05<-files_0.05[!is.na(files_0.05)]
+files_0.05<-paste0(common_path,files_0.05)
+
+#0.005
+files_0.005<-str_extract(files_to_read,pattern = "0[:punct:]005[:punct:]cisternsArea.csv$|[:punct:]0[:punct:]005[:punct:]cisternsArea \\([2:3]\\).csv$")
+files_0.005<-files_0.005[!is.na(files_0.005)]
+files_0.005<-paste0(common_path,files_0.005)
+print(files_0.01)
+
+#data_lst = lapply(files_0.01, read.csv)  # read all the matching files
+#data_lst[1]
+#data_lst[2]
+
+```
+
+````{r ERROR}
+list_files<-c(files_0.01,files_0.001,files_0.005,files_0.05,files_0.1)
+#list_files<-c(files_0.01)
+print(list_files[2])
+AreaData<-data.frame(matrix(nrow=600,ncol=64))
+cargadodedatos_area<-function(file_lst){
+archivos = lapply(file_lst, read.csv)
+#archivos[1]
+for (i in 1:length(archivos)){
+       if(i!=1){ SubjectDataM<-read.csv(file_lst[i],header=TRUE,sep=",")
+  AreaData<-bind_cols(AreaData,SubjectDataM,.name_repair = "minimal")#El minimal indica que no haya reparacion de nombres
+          }
+      else if (i==1){
+    AreaData<-read.csv(file_lst[i],header=TRUE,sep=",")
+  }
+    }
+  
+  #Definimos los nombres y los hacemos unicos
+  nombres<-names(AreaData)
+
+  nombresunicos<-make.unique(nombres,sep = "")
+  colnames(AreaData)<-nombresunicos
+  
+  return(AreaData)
+  }
+archivos_0.01 <-cargadodedatos_area(files_0.01)
+archivos_0.001<-cargadodedatos_area(files_0.001)
+
+```
+
+

@@ -1,0 +1,285 @@
+---
+title: "Probador"
+author: "Nico"
+date: "9/22/2020"
+output: html_document
+---
+
+```{r echo=FALSE, message=FALSE, warning=FALSE} 
+#Cargamos librerias
+library(lubridate)
+library(stringr)
+library(car)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(readr)
+library(rmarkdown)
+library(mosaicData)
+library(stringr)
+library(htmlwidgets)
+library(ggthemes)
+library(pander)
+library(xtable)
+library(reshape2)
+library(scales)
+library(tibble)
+library(abind)
+library(devtools)
+library(ggpubr)
+library(data.table)
+library(knitr)
+library(broom)
+```
+
+```{r  Data cargoes echo=FALSE, message=FALSE, warning=FALSE}
+#CisternsNames<-c('/home/user/Desktop/Pasantia/Golgi/BoC DistilationMat/DistilationMatDomain/ResultsIntrTransp3-1.csv','/home/user/Desktop/Pasantia/Golgi/BoC DistilationMat/DistilationMatDomain/ResultsIntrTransp3-2.csv','/home/user/Desktop/Pasantia/Golgi/BoC DistilationMat/DistilationMatDomain/ResultsIntrTransp3-3.csv')
+ves1<-read.csv('/home/user/Desktop/Pasantia/Golgi/BoC Distilation/Distillation+Maturation/ResultsIntrTransp3-1.csv')
+ves2<-read.csv('/home/user/Desktop/Pasantia/Golgi/BoC Distilation/Distillation+Maturation/ResultsIntrTransp3-12.csv')
+ves3<-read.csv('/home/user/Desktop/Pasantia/Golgi/BoC Distilation/Distillation+Maturation/ResultsIntrTransp3-3.csv')
+ves1<-ves1[1:300,]
+ves3<-ves3[1:300,]
+ves2<-ves2[1:300,]
+DistilationMatData<-cbind(ves1,ves2,ves3)
+#Debido a que actualizaron dplyr la funcion bind_cols ya no sirve, porque agrega todo junto pero no lo numera con un orden logico sino que lo numera con un orden cardinal.Lo solucione de una manera mas casera porque la gente de dplyr parece haber decidido hacerlo de esta manera.
+# DistilationMatData<-data.frame(matrix(nrow=150,ncol=64))
+# for (i in 1:length(CisternsNames)){
+#   if(i!=1){ 
+#   SubjectDataM<-read.csv(CisternsNames[i],header=TRUE,sep=",")
+#   DistilationMatData<-bind_cols(DistilationMatData,SubjectDataM,.name_repair = "minimal")#El minimal indica que no haya reparacion de nombres
+#   
+#   
+#   }
+#   else if (i==1){DistilationMatData<-(SubjectDataM<-read.csv(CisternsNames[i],header=TRUE,sep=","))
+#   }}
+#Definimos los nombres y los hacemos unicos
+nombres<-names(DistilationMatData)
+nombresunicos<-make.unique(nombres,sep = "")
+colnames(DistilationMatData)<-nombresunicos
+#Nos quedamos con la primera media hora (30000 ticks)
+DistilationMatData<-DistilationMatData[1:300,]
+#tail(DistilationMatData)
+```
+
+```{r  Area  Distilation BoC echo=FALSE, message=FALSE, warning=FALSE}
+#CisternsAreaNames<-c('/home/user/Desktop/Pasantia/Golgi/BoC /Distilation+Maturation/cisternsArea-1.csv','/home/user/Desktop/Pasantia/Golgi/BoC Distilation/Distilation+Maturation/cisternsArea-2.csv','/home/user/Desktop/Pasantia/Golgi/BoC Distilation/Distilation+Maturation/cisternsArea-3.csv')
+ves1<-read.csv('/home/user/Desktop/Pasantia/Golgi/BoC Distilation/Distillation+Maturation/cisternsArea-1.csv')
+ves2<-read.csv('/home/user/Desktop/Pasantia/Golgi/BoC Distilation/Distillation+Maturation/cisternsArea-2.csv')
+ves3<-read.csv('/home/user/Desktop/Pasantia/Golgi/BoC Distilation/Distillation+Maturation/cisternsArea-3.csv')
+ves1<-ves1[1:300,]
+ves3<-ves3[1:300,]
+ves2<-ves2[1:300,]
+DistilationMatCisternAreaData<-cbind(ves1,ves2,ves3)
+#Debido a que actualizaron dplyr la funcion bind_cols ya no sirve, porque agrega todo junto pero no lo numera con un orden logico sino que lo numera con un orden cardinal.Lo solucione de una manera mas casera porque la gente de dplyr parece haber decidido hacerlo de esta manera.
+# DistilationMatCisternAreaData<-data.frame(matrix(nrow=150,ncol=300))
+# for (i in 1:length(CisternsAreaNames)){
+#   if(i!=1){ 
+#   SubjectDataM<-read.csv(CisternsAreaNames[i],header=TRUE,sep=",")
+#   DistilationMatCisternAreaData<-bind_cols(DistilationMatCisternAreaData,SubjectDataM,.name_repair = "minimal")#El minimal indica que no haya reparacion de nombres
+#   
+#   
+#   }
+#   else if (i==1){DistilationMatCisternAreaData<-(SubjectDataM<-read.csv(CisternsAreaNames[i],header=TRUE,sep=","))
+#   
+#   }}
+#Definimos los nombres y los hacemos unicos
+nombres<-names(DistilationMatCisternAreaData)
+
+nombresunicos<-make.unique(nombres,sep = "")
+colnames(DistilationMatCisternAreaData)<-nombresunicos
+print(nombresunicos)#Ahora los reestablecemos como los nombres del data frame
+#Vamos a cortar los datos hasta los 30k ticks para ver algo mejor la parte importante del transporte
+DistilationMatCisternAreaData<-DistilationMatCisternAreaData[1:300,]
+tail(DistilationMatCisternAreaData)
+```
+
+```{r Area  Data supp figures echo=FALSE, message=FALSE, warning=FALSE}
+# CisternsAreaNames <-list.files(path = "/home/user/Desktop/Pasantia/Golgi/datos_franco/Distilation/Resultados-Distillation-estable_-sat-13-7/Resultados Distillation estable, sat 13-7/", pattern = "cisternsArea*", full.names = T)
+# 
+# DistilationEstCisternAreaData<-data.frame(matrix(nrow=150,ncol=64))
+# for (i in 1:length(CisternsAreaNames)){
+#    if(i!=1){ 
+#    SubjectDataM<-read.csv(CisternsAreaNames[i],header=TRUE,sep=",")
+#    DistilationEstCisternAreaData<-bind_cols(DistilationEstCisternAreaData,SubjectDataM,.name_repair = "minimal")#El minimal indica que no haya reparacion de nombres
+#    
+#    
+#    }
+#    else if (i==1){DistilationEstCisternAreaData<-(SubjectDataM<-read.csv(CisternsAreaNames[i],header=TRUE,sep=","))
+#    
+# }}
+# #Definimos los nombres y los hacemos unicos
+# nombres<-names(DistilationEstCisternAreaData)
+# 
+# nombresunicos<-make.unique(nombres,sep = "")
+# colnames(DistilationEstCisternAreaData)<-nombresunicos
+# print(nombresunicos)#Ahora los reestablecemos como los nombres del data frame
+# #Vamos a cortar los datos hasta los 30k ticks para ver algo mejor la parte importante del transporte
+# DistilationEstCisternAreaData<-DistilationEstCisternAreaData[1:300,]
+# tail(DistilationEstCisternAreaData)
+```
+
+```{r General Expressions Multiple Area Data Supp figures}
+#Busca dentro del vector donde estan los nombres palabras que coincidan con RabB1.
+#Esto me permite agilizar la escritura cuando tenga mas de 3 simulaciones
+#donde ya es engorroso anotar cada uno de los nombres cambiandole los nombres.
+RabB<-grep("RabB1*",nombresunicos,value=T)
+RabC<-grep("RabC1*",nombresunicos,value=T)
+RabD<-grep("RabD1*",nombresunicos,value=T)
+RabE<-grep("RabE1*",nombresunicos,value=T)
+RabA<-grep("RabA1*",nombresunicos,value=T)
+
+print(RabA)
+```
+
+```{r General Expressions Area}
+#head(nombresunicos)
+#shopping_list <- c("apples x4", "bag of flour", "bag of sugar", "milk x2")
+#str_extract(shopping_list, "\\d")
+#str_extract(shopping_list, "[a-z]+")
+#str_extract(shopping_list, "[a-z]{1,4}")
+#res<-select(nombresunicos, "RabB")
+#Busca dentro del vector donde estan los nombres palabras que coincidan con RabB1.
+#Esto me permite agilizar la escritura cuando tenga mas de 3 simulaciones
+#donde ya es engorroso anotar cada uno de los nombres cambiandole los nombres.
+RabB<-grep("RabB1*",nombresunicos,value=T)
+RabC<-grep("RabC1*",nombresunicos,value=T)
+RabD<-grep("RabD1*",nombresunicos,value=T)
+RabE<-grep("RabE1*",nombresunicos,value=T)
+RabA<-grep("RabA1*",nombresunicos,value=T)
+#res<-c(str_extract_all(nombresunicos, "\\Rab[B]{1,3}", T))
+head(RabA)
+```
+
+```{r Area  Data supp figures echo=FALSE, message=FALSE, warning=FALSE}
+DNames <-list.files(path = "/home/user/Desktop/Pasantia/Golgi/datos_franco/Distilation/Resultados-Distillation-estable_-sat-13-7/Resultados Distillation estable, sat 13-7", pattern = "^ResultsIntrTransp3.*.csv", full.names = T)
+DistilationEstData<-data.frame(matrix(nrow=150,ncol=64))
+for (i in 1:length(DNames)){
+   if(i!=1){ 
+   SubjectDataM<-read.csv(DNames[i],header=TRUE,sep=",")
+   DistilationEstData<-bind_cols(DistilationEstData,SubjectDataM,.name_repair = "minimal")#El minimal indica que no haya reparacion de nombres
+   
+   
+   }
+   else if (i==1){DistilationEstData<-(SubjectDataM<-read.csv(DNames[i],header=TRUE,sep=","))
+   
+}}
+#Definimos los nombres y los hacemos unicos
+nombres<-names(DistilationEstData)
+
+nombresunicos<-make.unique(nombres,sep = "")
+colnames(DistilationEstData)<-nombresunicos
+print(nombresunicos)#Ahora los reestablecemos como los nombres del data frame
+#tail(DistilationEstData)
+```
+
+```{r General Expressions Data}
+#Busca dentro del vector donde estan los nombres palabras que coincidan con RabB1.
+#Esto me permite agilizar la escritura cuando tenga mas de 3 simulaciones
+#donde ya es engorroso anotar cada uno de los nombres cambiandole los nombres.
+RabB<-grep("^solSRabB$|^solSRabB*\\d$",nombresunicos,value=T)
+PostGolgi<-grep("^solS$|^solS*\\d$",nombresunicos,value=T)
+RabA<-grep("^solSRabA$|^solSRabA*\\d$",nombresunicos,value=T)
+RabC<-grep("^solSRabC$|^solSRabC*\\d$",nombresunicos,value=T)
+RabD<-grep("^solSRabD$|^solSRabD*\\d$",nombresunicos,value=T)
+RabE<-grep("^solSRabE$|^solSRabE*\\d$",nombresunicos,value=T)
+print(PostGolgi)
+```
+
+```{r solS, echo=FALSE, message=FALSE, warning=FALSE}
+#Figura 2 estable sin saturación
+PostGolgimean<-rowMeans(DistilationEstData[,c(PostGolgi)])
+
+#RabEmean<-rowMeans(DistilationEstData[,c("solSRabE","solSRabE1","solSRabE2","solSRabE3","solSRabE4","solSRabE5","solSRabE6","solSRabE7","solSRabE8","solSRabE9")])
+RabAmean<-rowMeans(DistilationEstData[,c(RabA)])
+#C1
+runC11<-DistilationEstData$solSRabA
+runC12<-DistilationEstData$solSRabA1
+runC13<-DistilationEstData$solSRabA2
+runC14<-DistilationEstData$solSRabA3
+runC15<-DistilationEstData$solSRabA4
+runC16<-DistilationEstData$solSRabA5
+runC17<-DistilationEstData$solSRabA6
+runC18<-DistilationEstData$solSRabA7
+runC19<-DistilationEstData$solSRabA8
+runC110<-DistilationEstData$solSRabA9
+#C5
+runC51<-DistilationEstData$solS
+runC52<-DistilationEstData$solS1
+runC53<-DistilationEstData$solS2
+runC54<-DistilationEstData$solS3
+runC55<-DistilationEstData$solS4
+runC56<-DistilationEstData$solS5
+runC57<-DistilationEstData$solS6
+runC58<-DistilationEstData$solS7
+runC59<-DistilationEstData$solS8
+runC510<-DistilationEstData$solS9
+dataframesolS<-data.frame(runC11,runC12,runC13,runC14,runC15,runC16,runC17,runC18,runC19,runC110,RabAmean, runC51,runC52,runC53,runC54,runC55,runC56,runC57,runC58,runC59,runC510
+,PostGolgimean)
+n<-length(dataframesolS$RabAmean)*100
+ticks<-seq(100,n,by=100)
+dataframesolS$ticks<-ticks
+d1<-melt(dataframesolS,id.vars="ticks")
+solSGrafDPromedio<-ggplot(d1,aes(x=ticks,y=value,color=variable,size=variable))+geom_point()+geom_line(aes(x=ticks,y=value,color=variable))+labs(x="",y="")+scale_size_manual(values=c("RabAmean"= 2.5,"runC11"=1.0,"runC12"=1.0,"runC13"=1.0,"runC14"=1.0,"runC15"=1.0,"runC16"=1.0,"runC17"=1.0,"runC18"=1.0,"runC19"=1.0,"runC110"=1.0,"PostGolgimean"= 2.5,"runC51"=1.0,"runC52"=1.0,"runC53"=1.0,"runC54"=1.0,"runC55"=1.0,"runC56"=1.0,"runC57"=1.0,"runC58"=1.0,"runC59"=1.0,"runC510"=1.0))+scale_color_manual(values = c("runC11"="skyblue1","runC12"="skyblue1","runC13"="skyblue1","runC14"="skyblue1","runC15"="skyblue1","runC16"="skyblue1","runC17"="skyblue1","runC18"="skyblue1","runC18"="skyblue1","runC19"="skyblue1","runC110"="skyblue1","RabAmean" = "blue","runC51"="grey","runC52"="grey","runC53"="grey","runC54"="grey","runC55"="grey","runC56"="grey","runC57"="grey","runC58"="grey","runC58"="grey","runC59"="grey","runC510"="grey","PostGolgimean" = "grey1"))+ylim(0,2)+scale_x_continuous(breaks= c(0,15000,30000,45000,60000))+scale_x_continuous(breaks= c(0,15000,30000,45000,60000))+scale_x_continuous(breaks= c(0,15000,30000,45000,60000))+theme_classic()+theme_classic()+theme(legend.key.size = unit(3, "cm"))+theme(legend.position="none",axis.ticks.length=unit(0.5, "cm"),legend.title=element_blank(),axis.text =element_blank(),axis.line = element_line(size=3),axis.ticks = element_line(colour = "black", size = 3),text=element_text(size = 30))
+solSGrafDPromedio
+```
+
+
+```{r General Expressions Data}
+#Busca dentro del vector donde estan los nombres palabras que coincidan con RabB1.
+#Esto me permite agilizar la escritura cuando tenga mas de 3 simulaciones
+#donde ya es engorroso anotar cada uno de los nombres cambiandole los nombres.
+RabB<-grep("^solLRabB$|^solLRabB*\\d$",nombresunicos,value=T)
+PostGolgi<-grep("^solL$|^solL*\\d$",nombresunicos,value=T)
+RabA<-grep("^solLRabA$|^solLRabA*\\d$",nombresunicos,value=T)
+RabC<-grep("^solLRabC$|^solLRabC*\\d$",nombresunicos,value=T)
+RabD<-grep("^solLRabD$|^solLRabD*\\d$",nombresunicos,value=T)
+RabE<-grep("^solLRabE$|^solLRabE*\\d$",nombresunicos,value=T)
+print(RabE)
+```
+
+```{r BANDERA echo=FALSE, message=FALSE, warning=FALSE}
+C2<-rowMeans(DistilationMatCisternAreaData[,c(RabB)])
+C3<-rowMeans(DistilationMatCisternAreaData[,c(RabC)])
+C4<-rowMeans(DistilationMatCisternAreaData[,c(RabD)])
+C5<-rowMeans(DistilationMatCisternAreaData[,c(RabE)])
+C1<-rowMeans(DistilationMatCisternAreaData[,c(RabA)])
+
+dataframepromedioCisternArea<-data.frame(C5,C4,C3,C2,C1)
+n<-length(dataframepromedioCisternArea$C1)*100
+ticks<-seq(100,n,by=100)
+dataframepromedioCisternArea$ticks<-ticks
+d1<-melt(dataframepromedioCisternArea,id.vars="ticks")
+CisternAreaGrafPromedio<-ggplot(d1, aes(x=ticks, y=value, fill=variable)) + geom_area()+labs(x="",y="")+ scale_fill_manual(values = c("C1" = "blue", "C2" = "skyblue2","C3"="green4","C4"="red","C5"="yellow"))+theme_classic()+scale_x_continuous(breaks= c(0,15000,30000))+theme(legend.key.size = unit(3, "cm"))+theme(legend.position="none",axis.ticks.length=unit(0.5, "cm"),legend.title=element_blank(),axis.text =element_blank(),axis.line = element_line(size=3),axis.ticks = element_line(colour = "black", size = 3),text=element_text(size = 30))
+#+theme(text=element_text(size = 30))+theme(legend.position="none")+theme(legend.title=element_blank())+theme(plot.title = element_text(hjust=0.7))+theme(axis.text.x =element_blank())+theme(axis.text.y = element_blank())+theme(legend.text = element_text(size =75 ))+theme(axis.title = element_text(size = 80))+theme(axis.line = element_line(size=3))+theme(axis.ticks = element_line(colour = "black", size = 3))
+CisternAreaGrafPromedio
+```
+
+```{r General expresions Cargoes}
+#Busca dentro del vector donde estan los nombres palabras que coincidan con RabB1.
+#Esto me permite agilizar la escritura cuando tenga mas de 3 simulaciones
+#donde ya es engorroso anotar cada uno de los nombres cambiandole los nombres.
+RabB<-grep("^solLRabB$|^solLRabB*\\d$",nombresunicos,value=T)
+PostGolgi<-grep("^solL$|^solL*\\d$",nombresunicos,value=T)
+RabA<-grep("^solLRabA$|^solLRabA*\\d$",nombresunicos,value=T)
+RabC<-grep("^solLRabC$|^solLRabC*\\d$",nombresunicos,value=T)
+RabD<-grep("^solLRabD$|^solLRabD*\\d$",nombresunicos,value=T)
+RabE<-grep("^solLRabE$|^solLRabE*\\d$",nombresunicos,value=T)
+print(RabE)
+```
+
+```{r solL echo=FALSE, message=FALSE, warning=FALSE}
+PostGolgi<-rowMeans(DistilationMatData[,c(PostGolgi)])
+C1<-rowMeans(DistilationMatData[,c(RabA)])
+C2<-rowMeans(DistilationMatData[,c(RabB)])
+C3<-rowMeans(DistilationMatData[,c(RabC)])
+C4<-rowMeans(DistilationMatData[,c(RabD)])
+C5<-rowMeans(DistilationMatData[,c(RabE)])
+dataframepromedio0.1CsolL<-data.frame(C1,C2,C3,C4,C5,PostGolgi)
+n<-length(dataframepromedio0.1CsolL$C1)*100
+ticks<-seq(100,n,by=100)
+dataframepromedio0.1CsolL$ticks<-ticks
+d1<-melt(dataframepromedio0.1CsolL,id.vars="ticks")
+solLGrafDPromedio<-ggplot(d1,aes(x=ticks,y=value,color=variable))+geom_point(size=12)+geom_line(size=5)+labs(x="",y="") +scale_color_manual(values = c("C1" = "blue", "C2" = "skyblue2","C3"="green4","C4"="red","C5"="yellow","PostGolgi"="grey1"))+theme_classic()+theme(text=element_text(size = 30))+ theme(legend.position="none") +
+  theme(legend.title=element_blank())+theme(plot.title = element_text(hjust=0.5),axis.text = element_blank())+theme(axis.title.x = element_text(vjust=1))+theme(axis.title.y = element_text(vjust=2.2))+theme(legend.text = element_text(size =15 ))+theme(legend.text = element_text(size = 50))+theme(axis.line = element_line(size=3))+theme(axis.ticks = element_line(colour = "black", size = 3))+theme( axis.ticks.length=unit(0.5, "cm"))+theme(axis.ticks.margin=unit(0.5, "cm"))+scale_x_continuous(breaks= c(0,15000,30000))+scale_y_continuous(breaks= c(0,0.25,0.5,0.75,1,1.25))
+solLGrafDPromedio
+```
